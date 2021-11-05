@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"modbus"
+	"github.com/sayhitoc/modbus"
 )
 
 const (

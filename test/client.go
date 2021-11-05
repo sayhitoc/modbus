@@ -7,7 +7,7 @@ package test
 import (
 	"testing"
 
-	"modbus"
+	"github.com/sayhitoc/modbus"
 )
 
 func ClientTestReadCoils(t *testing.T, client modbus.Client) {

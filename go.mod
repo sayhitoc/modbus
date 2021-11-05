@@ -1,4 +1,4 @@
-module modbus
+module github.com/sayhitoc/modbus
 
 go 1.17
 

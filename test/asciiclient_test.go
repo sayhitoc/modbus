@@ -9,7 +9,7 @@ import (
 	"os"
 	"testing"
 
-	"modbus"
+	"github.com/sayhitoc/modbus"
 )
 
 const (
