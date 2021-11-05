@@ -11,13 +11,14 @@ Bit access:
 *   Write Multiple Coils
 
 16-bit access:
-*   Read Input Registers
-*   Read Holding Registers
-*   Write Single Register
-*   Write Multiple Registers
-*   Read/Write Multiple Registers
-*   Mask Write Register
-*   Read FIFO Queue
+* Read Input Registers
+* Read Holding Registers
+* Write Single Register
+* Write Multiple Registers
+* Read/Write Multiple Registers
+* Mask Write Register
+* Read FIFO Queue
+* Read Custom Command
 
 Supported formats
 -----------------

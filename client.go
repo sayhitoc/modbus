@@ -30,7 +30,7 @@ func NewClient2(packager Packager, transporter Transporter) Client {
 	return &client{packager: packager, transporter: transporter}
 }
 
-// Request:
+// ReadCoils Request:
 //  Function code         : 1 byte (0x01)
 //  Starting address      : 2 bytes
 //  Quantity of coils     : 2 bytes
@@ -61,7 +61,7 @@ func (mb *client) ReadCoils(address, quantity uint16) (results []byte, err error
 	return
 }
 
-// Request:
+// ReadDiscreteInputs Request:
 //  Function code         : 1 byte (0x02)
 //  Starting address      : 2 bytes
 //  Quantity of inputs    : 2 bytes
@@ -92,7 +92,7 @@ func (mb *client) ReadDiscreteInputs(address, quantity uint16) (results []byte, 
 	return
 }
 
-// Request:
+// ReadHoldingRegisters Request:
 //  Function code         : 1 byte (0x03)
 //  Starting address      : 2 bytes
 //  Quantity of registers : 2 bytes
@@ -123,7 +123,7 @@ func (mb *client) ReadHoldingRegisters(address, quantity uint16) (results []byte
 	return
 }
 
-// Request:
+// ReadInputRegisters Request:
 //  Function code         : 1 byte (0x04)
 //  Starting address      : 2 bytes
 //  Quantity of registers : 2 bytes
@@ -154,7 +154,7 @@ func (mb *client) ReadInputRegisters(address, quantity uint16) (results []byte, 
 	return
 }
 
-// Request:
+// WriteSingleCoil Request:
 //  Function code         : 1 byte (0x05)
 //  Output address        : 2 bytes
 //  Output value          : 2 bytes
@@ -195,7 +195,7 @@ func (mb *client) WriteSingleCoil(address, value uint16) (results []byte, err er
 	return
 }
 
-// Request:
+// WriteSingleRegister Request:
 //  Function code         : 1 byte (0x06)
 //  Register address      : 2 bytes
 //  Register value        : 2 bytes
@@ -231,7 +231,7 @@ func (mb *client) WriteSingleRegister(address, value uint16) (results []byte, er
 	return
 }
 
-// Request:
+// WriteMultipleCoils Request:
 //  Function code         : 1 byte (0x0F)
 //  Starting address      : 2 bytes
 //  Quantity of outputs   : 2 bytes
@@ -273,7 +273,7 @@ func (mb *client) WriteMultipleCoils(address, quantity uint16, value []byte) (re
 	return
 }
 
-// Request:
+// WriteMultipleRegisters Request:
 //  Function code         : 1 byte (0x10)
 //  Starting address      : 2 bytes
 //  Quantity of outputs   : 2 bytes
@@ -315,7 +315,7 @@ func (mb *client) WriteMultipleRegisters(address, quantity uint16, value []byte)
 	return
 }
 
-// Request:
+// MaskWriteRegister Request:
 //  Function code         : 1 byte (0x16)
 //  Reference address     : 2 bytes
 //  AND-mask              : 2 bytes
@@ -358,7 +358,7 @@ func (mb *client) MaskWriteRegister(address, andMask, orMask uint16) (results []
 	return
 }
 
-// Request:
+// ReadWriteMultipleRegisters Request:
 //  Function code         : 1 byte (0x17)
 //  Read starting address : 2 bytes
 //  Quantity to read      : 2 bytes
@@ -396,7 +396,7 @@ func (mb *client) ReadWriteMultipleRegisters(readAddress, readQuantity, writeAdd
 	return
 }
 
-// Request:
+// ReadFIFOQueue Request:
 //  Function code         : 1 byte (0x18)
 //  FIFO pointer address  : 2 bytes
 // Response:
@@ -432,6 +432,29 @@ func (mb *client) ReadFIFOQueue(address uint16) (results []byte, err error) {
 	return
 }
 
+func (mb *client) ReadRawDataByCustomCommand(address uint16, functionCode byte, quantity uint16) (rawData []byte, err error) {
+	if quantity < 1 || quantity > 125 {
+		err = fmt.Errorf("modbus: quantity '%v' must be between '%v' and '%v',", quantity, 1, 125)
+		return
+	}
+	request := ProtocolDataUnit{
+		FunctionCode: functionCode,
+		Data:         dataBlock(address, quantity),
+	}
+	response, err := mb.send(&request)
+	if err != nil {
+		return
+	}
+	count := int(response.Data[0])
+	length := len(response.Data) - 1
+	if count != length {
+		err = fmt.Errorf("modbus: response data size '%v' does not match count '%v'", length, count)
+		return
+	}
+	rawData = response.RawData
+	return
+}
+
 // Helpers
 
 // send sends request and checks possible exception in the response.
@@ -461,6 +484,7 @@ func (mb *client) send(request *ProtocolDataUnit) (response *ProtocolDataUnit, e
 		err = fmt.Errorf("modbus: response data is empty")
 		return
 	}
+	response.RawData = aduResponse
 	return
 }
 
